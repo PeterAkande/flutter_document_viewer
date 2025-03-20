@@ -19,7 +19,7 @@ Or
 
 ```yaml
 dependencies:
-  flutter_document_viewer: ^0.1.0
+  flutter_document_viewer: ^0.1.0+1
 ```
 
 ### 🚀 Example Usage
