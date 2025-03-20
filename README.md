@@ -80,7 +80,7 @@ class _DocumentViewerExampleState extends State<DocumentViewerExample> {
       body: Column(
         children: [
           Expanded(
-            child: FlutterDocumentViewer(
+            child: FlutterDo cumentViewer(
               url: pptxUrl,
               controller: _controller,
               showControls: _showControls,

@@ -1,6 +1,6 @@
 name: flutter_document_viewer
 description: Docx, PPTX, pdf viewer for flutter
-version: 0.1.0
+version: 0.1.0+1
 homepage: https://github.com/PeterAkande/flutter_document_viewer
 repository: https://github.com/PeterAkande/flutter_document_viewer
 

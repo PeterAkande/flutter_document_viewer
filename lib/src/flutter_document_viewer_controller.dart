@@ -3,8 +3,33 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-/// Controller for managing PDF viewer state and navigation
+/// Controller for managing the state and navigation of a document viewer.
+///
+/// This controller handles the interaction with the WebView that displays
+/// the document, providing methods for navigating between pages and
+/// properties for accessing the current state of the viewer.
+///
+/// It uses JavaScript to communicate with the Google Docs viewer within
+/// the WebView to control navigation and retrieve page information.
+///
+/// Example:
+/// ```dart
+/// final controller = FlutterDocumentViewerController(
+///   onReady: () {
+///     print('Document viewer is ready');
+///   },
+///   onPageChanged: (currentPage, totalPages) {
+///     print('Page changed to $currentPage of $totalPages');
+///   },
+/// );
+/// ```
 class FlutterDocumentViewerController extends ChangeNotifier {
+  /// Creates a controller for managing document viewer state and navigation.
+  ///
+  /// [onReady] is called when the document viewer is ready.
+  ///
+  /// [onPageChanged] is called when the current page changes, providing
+  /// the current page number and the total number of pages.
   FlutterDocumentViewerController({
     this.onReady,
     this.onPageChanged,
@@ -15,21 +40,40 @@ class FlutterDocumentViewerController extends ChangeNotifier {
   int _totalPages = 0;
   bool _isReady = false;
 
-  /// Current page number
+  /// The current page number in the document.
+  ///
+  /// This starts at 1 for the first page and is updated as the user
+  /// navigates through the document.
   int get currentPage => _currentPage;
 
-  /// Total number of pages
+  /// The total number of pages in the document.
+  ///
+  /// This may be 0 if the total number of pages has not been determined yet.
   int get totalPages => _totalPages;
 
-  /// Whether the PDF viewer is ready
+  /// Whether the document viewer is ready.
+  ///
+  /// This is set to true after the document has been loaded and the
+  /// viewer is ready for interaction.
   bool get isReady => _isReady;
 
+  /// Callback that is called when the document viewer is ready.
   final VoidCallback? onReady;
 
-  /// Callback when page changes, provides current page and total pages
+  /// Callback that is called when the current page changes.
+  ///
+  /// This callback provides the current page number and the total number
+  /// of pages. It is called whenever the current page changes, either
+  /// through user interaction or programmatic navigation.
   final void Function(int currentPage, int totalPages)? onPageChanged;
 
-  /// Initialize the controller with WebViewController
+  /// Initializes the controller with a WebViewController.
+  ///
+  /// This method should be called before using the controller to manage
+  /// the document viewer. It sets up the necessary JavaScript bindings
+  /// and event handlers for communication with the WebView.
+  ///
+  /// [controller] is the WebViewController to use for controlling the WebView.
   void initWebController(WebViewController controller) {
     if (_webController != null) {
       return;
@@ -38,6 +82,8 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     _setupController();
   }
 
+  /// Sets up the WebViewController with the necessary JavaScript bindings
+  /// and event handlers.
   void _setupController() {
     _webController!
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -70,7 +116,11 @@ class FlutterDocumentViewerController extends ChangeNotifier {
       );
   }
 
-  /// Set up an observer to detect page changes from Google Docs interface
+  /// Sets up an observer to detect page changes from the Google Docs interface.
+  ///
+  /// This injects JavaScript code that monitors the page number input field
+  /// and navigation buttons in the Google Docs viewer, sending notifications
+  /// through the JavaScript channel when the page changes.
   void _setupPageChangeObserver() {
     _webController!.runJavaScript('''
     (function() {
@@ -122,7 +172,11 @@ class FlutterDocumentViewerController extends ChangeNotifier {
   ''');
   }
 
-  /// Injects JavaScript helpers for PDF navigation
+  /// Injects JavaScript helpers for document navigation.
+  ///
+  /// This injects JavaScript functions into the WebView that provide
+  /// methods for navigating between pages and retrieving the current
+  /// page number from the Google Docs viewer.
   void _injectNavigationHelpers() {
     _webController!.runJavaScript('''
       function goToPage(pageNum) {
@@ -189,7 +243,10 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     ''');
   }
 
-  /// Hides the default page navigation UI
+  /// Hides the default page navigation UI in the Google Docs viewer.
+  ///
+  /// This injects CSS to hide the page display element in the viewer,
+  /// allowing the Flutter app to provide its own navigation controls.
   Future<void> _hidePageNavigation() async {
     await _webController!.runJavaScript('''
       (function hidePageNumber() {
@@ -209,7 +266,10 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     ''');
   }
 
-  /// Hides the default page navigation UI
+  /// Hides the "Open with Google Drive" button in the Google Docs viewer.
+  ///
+  /// This injects CSS to hide the button, keeping the viewer interface clean
+  /// and focused on document viewing.
   Future<void> _hideOpenInDriveButton() async {
     await _webController!.runJavaScript('''
       (function hideOpenInDriveButton() {
@@ -229,11 +289,17 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     ''');
   }
 
-  /// Navigate to a specific page
+  /// Navigates to a specific page in the document.
+  ///
+  /// [page] is the page number to navigate to, starting from 1.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// the navigation was successful. Navigation may fail if the page number
+  /// is invalid or the viewer is not ready.
   Future<bool> gotoPage(int page) async {
-    // if (!_isReady || page < 1 || (totalPages > 0 && page > totalPages)) {
-    //   return false;
-    // }
+    if (!_isReady || page < 1 || (totalPages > 0 && page > totalPages)) {
+      return false;
+    }
 
     try {
       final result =
@@ -256,13 +322,24 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     }
   }
 
-  /// Go to the next page
+  /// Navigates to the next page in the document.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// the navigation was successful. Navigation may fail if there is no next
+  /// page or the viewer is not ready.
   Future<bool> nextPage() => gotoPage(_currentPage + 1);
 
-  /// Go to the previous page
+  /// Navigates to the previous page in the document.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// the navigation was successful. Navigation may fail if there is no previous
+  /// page or the viewer is not ready.
   Future<bool> previousPage() => gotoPage(_currentPage - 1);
 
-  /// Retrieve the total number of pages
+  /// Retrieves the total number of pages in the document.
+  ///
+  /// This injects JavaScript to extract the total page count from the
+  /// Google Docs viewer interface.
   Future<void> _getTotalPages() async {
     try {
       final result = await _webController!.runJavaScriptReturningResult(r'''
@@ -313,16 +390,26 @@ class FlutterDocumentViewerController extends ChangeNotifier {
     }
   }
 
+  /// Schedules a retry for retrieving the total page count.
+  ///
+  /// This is called if the initial attempt to retrieve the total page count
+  /// fails, which can happen if the document is still loading.
   void _scheduleRetryGetTotalPages() {
     if (_totalPages == 0) {
       Future.delayed(const Duration(seconds: 2), _getTotalPages);
     }
   }
 
-  /// Refresh total pages count
+  /// Refreshes the total page count.
+  ///
+  /// This can be called to manually refresh the total page count, for example
+  /// if the document has been reloaded or changed.
   Future<void> refreshTotalPages() => _getTotalPages();
 
-  /// Dispose resources
+  /// Releases resources used by the controller.
+  ///
+  /// This method should be called when the controller is no longer needed,
+  /// to prevent memory leaks.
   @override
   void dispose() {
     super.dispose();

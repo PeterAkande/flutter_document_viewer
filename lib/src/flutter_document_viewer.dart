@@ -2,8 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_document_viewer/src/flutter_document_viewer_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-/// Widget for displaying and interacting with PDF documents
+/// A Flutter widget that displays document files like PDFs, DOCXs, PPTXs, etc.
+/// in a WebView using Google Docs viewer.
+///
+/// This widget handles loading the document from a URL and provides navigation
+/// controls for moving between pages in the document.
+///
+/// Example:
+/// ```dart
+/// FlutterDocumentViewer(
+///   url: 'https://example.com/document.pdf',
+///   controller: FlutterDocumentViewerController(),
+///   showControls: true,
+///   onPageChanged: (currentPage, totalPages) {
+///     print('Page changed to $currentPage of $totalPages');
+///   },
+/// )
+/// ```
 class FlutterDocumentViewer extends StatefulWidget {
+  /// Creates a document viewer widget.
+  ///
+  /// The [url] and [controller] parameters are required.
+  ///
+  /// [url] should be a valid URL pointing to the document to be displayed.
+  ///
+  /// [controller] is used to manage the viewer state and navigation.
+  ///
+  /// [showControls] determines whether to show the default navigation controls.
+  ///
+  /// [controlsBuilder] can be provided to customize the navigation controls.
+  ///
+  /// [onPageChanged] is called when the current page changes.
   const FlutterDocumentViewer({
     Key? key,
     required this.url,
@@ -13,20 +42,41 @@ class FlutterDocumentViewer extends StatefulWidget {
     this.onPageChanged,
   }) : super(key: key);
 
-  /// The URL of the PDF document to display
+  /// The URL of the document to display.
+  ///
+  /// This should be a publicly accessible URL pointing to the document file.
+  /// Supported formats include PDF, DOCX, PPTX, and other formats supported
+  /// by Google Docs viewer.
   final String url;
 
-  /// Controller to manage the PDF viewer
+  /// Controller to manage the document viewer state and navigation.
+  ///
+  /// The controller provides methods for navigating between pages and
+  /// properties for accessing the current state of the viewer.
   final FlutterDocumentViewerController controller;
 
-  /// Show page navigation controls
+  /// Whether to show the default navigation controls.
+  ///
+  /// If true, navigation controls for moving between pages will be displayed
+  /// at the bottom of the viewer.
+  ///
+  /// Defaults to true.
   final bool showControls;
 
-  /// Custom builder for navigation controls
+  /// Custom builder for navigation controls.
+  ///
+  /// If provided, this function will be used to build custom navigation
+  /// controls instead of the default ones.
+  ///
+  /// The builder function is provided with the current [BuildContext] and
+  /// the [FlutterDocumentViewerController] for the viewer.
   final Widget Function(BuildContext, FlutterDocumentViewerController)?
       controlsBuilder;
 
-  /// Callback when page changes, provides current page and total pages
+  /// Callback when the current page changes.
+  ///
+  /// This callback is called when the current page changes, providing
+  /// the current page number and the total number of pages.
   final void Function(int currentPage, int totalPages)? onPageChanged;
 
   @override
@@ -73,6 +123,10 @@ class _FlutterDocumentViewerState extends State<FlutterDocumentViewer> {
     );
   }
 
+  /// Builds the default navigation controls.
+  ///
+  /// This method creates a bottom app bar with navigation buttons for
+  /// moving between pages and a text display showing the current page number.
   Widget _defaultControlsBuilder(
       BuildContext context, FlutterDocumentViewerController controller) {
     return ListenableBuilder(
