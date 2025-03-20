@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_document_viewer/src/flutter_document_viewer_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
